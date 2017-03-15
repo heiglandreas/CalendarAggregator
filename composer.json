@@ -1,0 +1,29 @@
+{
+  "name": "org_heigl/calendar-aggregator",
+  "description": "Aggregate iCalendar and CalDav calendars",
+  "type": "library",
+  "require": {
+    "sabre/vobject": "^4.1",
+    "roave/security-advisories": "dev-master",
+    "org_heigl/trait-iterator": "^1.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^6.0",
+    "mockery/mockery": "^0.9.9"
+  },
+  "license": "MIT",
+  "authors": [{
+    "name": "Andreas Heigl",
+    "email": "andreas@heigl.org"
+  }],
+  "autoload" : {
+    "psr-4" : {
+      "Org_Heigl\\CalendarAggregator\\" : "src/"
+    }
+  },
+  "autoload-dev" : {
+    "psr-4" : {
+      "Org_Heigl\\CalendarAggregatorTest\\" : "tests/"
+    }
+  }
+}
