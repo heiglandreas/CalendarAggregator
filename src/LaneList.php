@@ -35,7 +35,7 @@ class LaneList implements \Iterator, \Countable
 {
     use IteratorTrait;
 
-    private $lanes;
+    private $lanes = [];
 
     /**
      * Get the array the iterator shall iterate over.
@@ -78,6 +78,5 @@ class LaneList implements \Iterator, \Countable
 
         $this->lanes[] = $lane;
     }
-
 
 }

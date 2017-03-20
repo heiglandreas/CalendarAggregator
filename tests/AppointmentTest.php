@@ -32,7 +32,9 @@ namespace Org_Heigl\CalendarAggregatorTest;
 use Org_Heigl\CalendarAggregator\Appointment;
 use PHPUnit\Framework\TestCase;
 use Sabre\VObject\Component\VEvent;
+use Sabre\VObject\Property;
 use Sabre\VObject\Reader;
+use Mockery as M;
 
 class AppointmentTest extends TestCase
 {
@@ -72,5 +74,27 @@ class AppointmentTest extends TestCase
             new \DateTimeImmutable('2012-01-09T13:59:59', new \DateTimeZone('UTC')),
             false
         ]];
+    }
+
+    public function testEmptyTitleIsGivenCorrectly()
+    {
+        $event = M::mock(VEvent::class);
+
+        $appointment = new Appointment($event);
+
+        $event->shouldReceive('select')->andReturn([]);
+        $this->assertEquals('', $appointment->getTitle());
+    }
+
+
+    public function testTitleIsGivenCorrectly()
+    {
+        $event = M::mock(VEvent::class);
+        $property = M::mock(Property::class);
+        $property->shouldReceive('setIterator');
+        $property->shouldReceive('__toString')->andReturn('test');
+        $appointment = new Appointment($event);
+        $event->shouldReceive('select')->andReturn(['SUMMARY' => $property]);
+        $this->assertEquals('test', $appointment->getTitle());
     }
 }
