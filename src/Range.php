@@ -71,7 +71,7 @@ class Range implements \Iterator, \Countable
     {
         $lanes = new LaneList();
         foreach ($this->items as $item) {
-            $lanes->addEvent($item);
+            $lanes->add($item);
         }
 
         return $lanes;

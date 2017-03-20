@@ -23,51 +23,23 @@
  * @author    Andreas Heigl<andreas@heigl.org>
  * @copyright Andreas Heigl
  * @license   http://www.opensource.org/licenses/mit-license.php MIT-License
- * @since     14.03.2017
+ * @since     20.03.2017
  * @link      http://github.com/heiglandreas/org.heigl.CalendarAggregator
  */
 
-namespace Org_Heigl\CalendarAggregator;
+namespace Org_Heigl\CalendarAggregatorTest;
 
-use Sabre\VObject\Component\VEvent;
+use Org_Heigl\CalendarAggregator\LaneList;
+use PHPUnit\Framework\TestCase;
 
-class Appointment
+class LaneListTest extends TestCase
 {
-    private $event;
-
-    public function __construct(VEvent $event)
+    public function testLaneListIsInitializedProperly()
     {
-        $this->event = $event;
-    }
+        $list = new LaneList();
 
-    public function getStart() : \DateTimeImmutable
-    {
-        return $this->event->DTSTART->getDateTime();
-    }
-
-    public function getEnd() : \DateTimeImmutable
-    {
-        return $this->event->DTEND->getDateTime();
-    }
-
-    public function getTitle()
-    {
-        if (! isset($this->event->SUMMARY)) {
-            return '';
-        }
-        return $this->event->SUMMARY;
-    }
-
-    public function intersects(\DateTimeInterface $start, \DateTimeInterface $end) : bool
-    {
-        if ($start > $this->getEnd()) {
-            return false;
-        }
-
-        if ($end < $this->getStart()) {
-            return false;
-        }
-
-        return true;
+        $this->assertAttributeSame([], 'lanes', $list);
+        $this->assertInstanceOf(\Iterator::class, $list);
+        $this->assertInstanceOf(\Countable::class, $list);
     }
 }
