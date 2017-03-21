@@ -23,39 +23,13 @@
  * @author    Andreas Heigl<andreas@heigl.org>
  * @copyright Andreas Heigl
  * @license   http://www.opensource.org/licenses/mit-license.php MIT-License
- * @since     14.03.2017
- * @link      http://github.com/heiglandreas/org.heigl.CalendarAggregator
+ * @since     20.03.2017
+ * @link      http://github.com/heiglandreas/pdfcalendar
  */
 
-namespace Org_Heigl\CalendarAggregator\CalendarResources;
+namespace Org_Heigl\CalendarAggregator;
 
-use Org_Heigl\CalendarAggregator\CalendarResourceInterface;
-use Sabre\VObject\Property\FlatText;
-use Sabre\VObject\Reader;
-use Sabre\VObject\UUIDUtil;
-
-class Icalendar implements CalendarResourceInterface
+interface AppointmentSorterInterface
 {
-    private $entry;
-
-    public function __construct(string $icalendarUrl, $streamcontext = null, $label = null)
-    {
-        $this->entry = Reader::read(fopen($icalendarUrl, 'r', null, $streamcontext), Reader::OPTION_FORGIVING);
-
-        error_log($this->entry->serialize());
-        $uuid = 'X-WR-RELCALID';
-        if (! $this->entry->$uuid) {
-            $this->entry->add(new FlatText($this->entry, $uuid, UUIDUtil::getUUID()));
-        }
-
-        if (null !== $label) {
-            $calName = 'X-WR-CALNAME';
-            $this->entry->$calName = $this->entry->$calName . ' - ' . $label;
-        }
-    }
-
-    public function getEntries(): \Traversable
-    {
-        return $this->entry;
-    }
+    public function __invoke(Appointment $first, Appointment $second) : int;
 }

@@ -35,7 +35,7 @@ class Range implements \Iterator, \Countable
 {
     use IteratorTrait;
 
-    private $items;
+    private $items = [];
 
     /**
      * Get the array the iterator shall iterate over.
@@ -57,7 +57,7 @@ class Range implements \Iterator, \Countable
      * The return value is cast to an integer.
      * @since 5.1.0
      */
-    public function count()
+    public function count() : int
     {
         return count($this->items);
     }
@@ -75,5 +75,10 @@ class Range implements \Iterator, \Countable
         }
 
         return $lanes;
+    }
+
+    public function sort(AppointmentSorterInterface $sorter)
+    {
+        usort($this->items, $sorter);
     }
 }

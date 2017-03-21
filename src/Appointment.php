@@ -50,12 +50,14 @@ class Appointment
         return $this->event->DTEND->getDateTime();
     }
 
-    public function getTitle()
+    public function getTitle() : string
     {
-        if (! isset($this->event->SUMMARY)) {
-            return '';
-        }
         return $this->event->SUMMARY;
+    }
+
+    public function getEvent() : VEvent
+    {
+        return $this->event;
     }
 
     public function intersects(\DateTimeInterface $start, \DateTimeInterface $end) : bool

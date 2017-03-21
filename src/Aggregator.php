@@ -57,6 +57,9 @@ class Aggregator
         /** @var \Sabre\VObject\Component\VCalendar $calendar */
         foreach ($this->events as $calendar) {
             $cal = $calendar->expand($start, $end);
+            if (! isset($cal->VEVENT)) {
+                continue;
+            }
             foreach ($cal->VEVENT as $event) {
                 $list->add(new Appointment($event), $calendar);
             }
