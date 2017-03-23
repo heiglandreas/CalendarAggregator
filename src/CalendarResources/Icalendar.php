@@ -30,6 +30,9 @@
 namespace Org_Heigl\CalendarAggregator\CalendarResources;
 
 use Org_Heigl\CalendarAggregator\CalendarResourceInterface;
+use Org_Heigl\Color\Color;
+use Org_Heigl\Color\Converter\XYZ2RGB;
+use Org_Heigl\Color\Renderer\RendererFactory;
 use Sabre\VObject\Property\FlatText;
 use Sabre\VObject\Reader;
 use Sabre\VObject\UUIDUtil;
@@ -38,11 +41,10 @@ class Icalendar implements CalendarResourceInterface
 {
     private $entry;
 
-    public function __construct(string $icalendarUrl, $streamcontext = null, $label = null)
+    public function __construct(string $icalendarUrl, $streamcontext = null, $label = null, Color $color = null, Color $contrast = null)
     {
         $this->entry = Reader::read(fopen($icalendarUrl, 'r', null, $streamcontext), Reader::OPTION_FORGIVING);
 
-        error_log($this->entry->serialize());
         $uuid = 'X-WR-RELCALID';
         if (! $this->entry->$uuid) {
             $this->entry->add(new FlatText($this->entry, $uuid, UUIDUtil::getUUID()));
@@ -50,8 +52,26 @@ class Icalendar implements CalendarResourceInterface
 
         if (null !== $label) {
             $calName = 'X-WR-CALNAME';
-            $this->entry->$calName = $this->entry->$calName . ' - ' . $label;
+            $this->entry->$calName = $this->entry->$calName . ' -   ' . $label;
         }
+
+        if (null !== $color) {
+            $converter = new XYZ2RGB();
+            $content   = $converter->convertColor($color);
+            $this->entry->add(new FlatText($this->entry, 'X-WDV-COLOR-RED', round($content[0], 0)));
+            $this->entry->add(new FlatText($this->entry, 'X-WDV-COLOR-GREEN', round($content[1], 0)));
+            $this->entry->add(new FlatText($this->entry, 'X-WDV-COLOR-BLUE', round($content[2], 0)));
+        }
+
+        if (null !== $contrast) {
+            $converter = new XYZ2RGB();
+            $content   = $converter->convertColor($contrast);
+            $this->entry->add(new FlatText($this->entry, 'X-WDV-CONTRAST-RED', round($content[0] * 255, 0)));
+            $this->entry->add(new FlatText($this->entry, 'X-WDV-CONTRAST-GREEN', round($content[1] * 255, 0)));
+            $this->entry->add(new FlatText($this->entry, 'X-WDV-CONTRAST-BLUE', round($content[2] * 255, 0)));
+        }
+
+        error_log($this->entry->serialize());
     }
 
     public function getEntries(): \Traversable
