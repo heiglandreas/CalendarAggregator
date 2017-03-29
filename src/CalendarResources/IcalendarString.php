@@ -27,53 +27,28 @@
  * @link      http://github.com/heiglandreas/org.heigl.CalendarAggregator
  */
 
-namespace Org_Heigl\CalendarAggregator;
+namespace Org_Heigl\CalendarAggregator\CalendarResources;
 
-use Sabre\VObject\Component\VEvent;
+use Org_Heigl\CalendarAggregator\CalendarResourceInterface;
+use Org_Heigl\Color\Color;
+use Org_Heigl\Color\Converter\XYZ2RGB;
+use Org_Heigl\Color\Renderer\RendererFactory;
+use Sabre\VObject\Component\VCalendar;
+use Sabre\VObject\Property\FlatText;
+use Sabre\VObject\Reader;
+use Sabre\VObject\UUIDUtil;
 
-class Appointment
+class IcalendarString implements CalendarResourceInterface
 {
-    private $event;
+    private $entry;
 
-    public function __construct(VEvent $event)
+    public function __construct(string $icalendar, Color $color = null, Color $contrast = null)
     {
-        $this->event = $event;
+        $this->entry = Reader::read($icalendar, Reader::OPTION_FORGIVING);
     }
 
-    public function getStart() : \DateTimeImmutable
+    public function getEntries(): VCalendar
     {
-        return $this->event->DTSTART->getDateTime();
-    }
-
-    public function getEnd() : \DateTimeImmutable
-    {
-        return $this->event->DTEND->getDateTime();
-    }
-
-    public function getTitle() : string
-    {
-        if (! isset($this->event->SUMMARY)) {
-            return '';
-        }
-
-        return $this->event->SUMMARY;
-    }
-
-    public function getEvent() : VEvent
-    {
-        return $this->event;
-    }
-
-    public function intersects(\DateTimeInterface $start, \DateTimeInterface $end) : bool
-    {
-        if ($start > $this->getEnd()) {
-            return false;
-        }
-
-        if ($end < $this->getStart()) {
-            return false;
-        }
-
-        return true;
+        return clone $this->entry;
     }
 }

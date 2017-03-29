@@ -23,43 +23,51 @@
  * @author    Andreas Heigl<andreas@heigl.org>
  * @copyright Andreas Heigl
  * @license   http://www.opensource.org/licenses/mit-license.php MIT-License
- * @since     14.03.2017
+ * @since     29.03.2017
  * @link      http://github.com/heiglandreas/org.heigl.CalendarAggregator
  */
 
-namespace Org_Heigl\CalendarAggregator\CalendarResources;
+namespace Org_Heigl\CalendarAggregatorTest\Decorators;
 
 use Org_Heigl\CalendarAggregator\CalendarResourceInterface;
-use Org_Heigl\Color\Color;
-use Org_Heigl\Color\Converter\XYZ2RGB;
-use Org_Heigl\Color\Renderer\RendererFactory;
+use Org_Heigl\CalendarAggregator\Decorators\AppendLabelToCalendarName;
+use Org_Heigl\CalendarAggregator\Decorators\AssertCalendarId;
+use PHPUnit\Framework\TestCase;
+use Mockery as M;
 use Sabre\VObject\Component\VCalendar;
-use Sabre\VObject\Property\FlatText;
-use Sabre\VObject\Reader;
-use Sabre\VObject\UUIDUtil;
 
-class Icalendar implements CalendarResourceInterface
+class AssertCalendarIdTest extends TestCase
 {
-    private $entry;
-
-    public function __construct(string $icalendarUrl, $streamcontext = null, Color $color = null, Color $contrast = null)
+    public function testThatExistingIdIsNotChanged()
     {
+        $name = 'X-WR-RELCALID';
+        $calendar = new VCalendar([]);
+        $calendar->$name = 'Foo';
 
-        $fileHandle = $this->getFileHandle($icalendarUrl, $streamcontext);
-        $this->entry = Reader::read($fileHandle, Reader::OPTION_FORGIVING);
+        $default = M::mock(CalendarResourceInterface::class);
+        $default->shouldReceive('getEntries')->andReturn($calendar);
+
+        $decorator = new AssertCalendarId($default);
+
+        $entries = $decorator->getEntries();
+        $this->assertSame($calendar, $entries);
+        $this->assertEquals('Foo', (string) $entries->$name);
     }
 
-    public function getEntries(): VCalendar
+    public function testThatNotExistingIdIsCreated()
     {
-        return clone $this->entry;
-    }
+        $name = 'X-WR-RELCALID';
+        $calendar = new VCalendar([]);
 
-    private function getFileHandle(string $icalendarUrl, $streamcontext = null)
-    {
-        if (null === $streamcontext) {
-            return fopen($icalendarUrl, 'r');
-        }
+        $default = M::mock(CalendarResourceInterface::class);
+        $default->shouldReceive('getEntries')->andReturn($calendar);
 
-        return fopen($icalendarUrl, 'r', null, $streamcontext);
+        $decorator = new AssertCalendarId($default);
+
+        $entries = $decorator->getEntries();
+
+        $this->assertSame($calendar, $entries);
+        $this->assertNotEmpty((string) $entries->$name);
+        $this->assertRegExp('/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/', (string) $entries->$name);
     }
 }

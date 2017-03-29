@@ -34,6 +34,7 @@ use Org_Heigl\CalendarAggregator\CalendarResourceInterface;
 use Org_Heigl\CalendarAggregator\EventList;
 use PHPUnit\Framework\TestCase;
 use Mockery as M;
+use Sabre\VObject\Component\VCalendar;
 
 class AggregatorTest extends TestCase
 {
@@ -48,7 +49,7 @@ class AggregatorTest extends TestCase
     {
         $aggregator = new Aggregator();
         $calendar = M::mock(CalendarResourceInterface::class);
-        $calendar->shouldReceive('getEntries');
+        $calendar->shouldReceive('getEntries')->andReturn(new VCalendar());
 
         $aggregator->add($calendar);
 

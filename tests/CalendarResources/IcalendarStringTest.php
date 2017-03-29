@@ -27,53 +27,35 @@
  * @link      http://github.com/heiglandreas/org.heigl.CalendarAggregator
  */
 
-namespace Org_Heigl\CalendarAggregator;
+namespace Org_Heigl\CalendarAggregatorTest\CalendarResources;
 
-use Sabre\VObject\Component\VEvent;
+use Org_Heigl\CalendarAggregator\CalendarResources\IcalendarString;
+use Sabre\VObject\Component\VCalendar;
+use PHPUnit\Framework\TestCase;
 
-class Appointment
+class IcalendarStringTest extends TestCase
 {
-    private $event;
-
-    public function __construct(VEvent $event)
+    /** @dataProvider instantiationWorksProvider */
+    public function testInstantiationWorksAsExpected($uri)
     {
-        $this->event = $event;
+        $resource = new IcalendarString(file_get_contents($uri));
+
+        $this->assertAttributeInstanceOf(VCalendar::class, 'entry', $resource);
     }
 
-    public function getStart() : \DateTimeImmutable
+    /** @dataProvider instantiationWorksProvider */
+    public function testGettingEntriesWorks($uri)
     {
-        return $this->event->DTSTART->getDateTime();
+        $resource = new IcalendarString(file_get_contents($uri));
+
+        $this->assertInstanceof(VCalendar::class, $resource->getEntries());
+        $this->assertInstanceof (\Traversable::class, $resource->getEntries());
     }
 
-    public function getEnd() : \DateTimeImmutable
+    public function instantiationWorksProvider()
     {
-        return $this->event->DTEND->getDateTime();
-    }
-
-    public function getTitle() : string
-    {
-        if (! isset($this->event->SUMMARY)) {
-            return '';
-        }
-
-        return $this->event->SUMMARY;
-    }
-
-    public function getEvent() : VEvent
-    {
-        return $this->event;
-    }
-
-    public function intersects(\DateTimeInterface $start, \DateTimeInterface $end) : bool
-    {
-        if ($start > $this->getEnd()) {
-            return false;
-        }
-
-        if ($end < $this->getStart()) {
-            return false;
-        }
-
-        return true;
+        return [
+            ['file://' . __DIR__ . '/_assets/test.ical'],
+        ];
     }
 }

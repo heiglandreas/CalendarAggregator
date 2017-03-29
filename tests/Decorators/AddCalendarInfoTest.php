@@ -23,57 +23,38 @@
  * @author    Andreas Heigl<andreas@heigl.org>
  * @copyright Andreas Heigl
  * @license   http://www.opensource.org/licenses/mit-license.php MIT-License
- * @since     14.03.2017
+ * @since     29.03.2017
  * @link      http://github.com/heiglandreas/org.heigl.CalendarAggregator
  */
 
-namespace Org_Heigl\CalendarAggregator;
+namespace Org_Heigl\CalendarAggregatorTest\Decorators;
 
-use Sabre\VObject\Component\VEvent;
+use Org_Heigl\CalendarAggregator\CalendarResourceInterface;
+use Org_Heigl\CalendarAggregator\Decorators\AddCalendarInfo;
+use Org_Heigl\CalendarAggregator\Decorators\AppendLabelToCalendarName;
+use Org_Heigl\CalendarAggregator\Decorators\AssertCalendarId;
+use PHPUnit\Framework\TestCase;
+use Mockery as M;
+use Sabre\VObject\Component\VCalendar;
 
-class Appointment
+class AddCalendarInfoTest extends TestCase
 {
-    private $event;
-
-    public function __construct(VEvent $event)
+    public function testThatValueIsAdded()
     {
-        $this->event = $event;
-    }
+        $name = 'foo';
+        $upperName = 'FOO';
+        $value = 'bar';
+        $calendar = new VCalendar([]);
 
-    public function getStart() : \DateTimeImmutable
-    {
-        return $this->event->DTSTART->getDateTime();
-    }
+        $default = M::mock(CalendarResourceInterface::class);
+        $default->shouldReceive('getEntries')->andReturn($calendar);
 
-    public function getEnd() : \DateTimeImmutable
-    {
-        return $this->event->DTEND->getDateTime();
-    }
+        $decorator = new AddCalendarInfo($default, $name, $value);
 
-    public function getTitle() : string
-    {
-        if (! isset($this->event->SUMMARY)) {
-            return '';
-        }
+        $entries = $decorator->getEntries();
 
-        return $this->event->SUMMARY;
-    }
-
-    public function getEvent() : VEvent
-    {
-        return $this->event;
-    }
-
-    public function intersects(\DateTimeInterface $start, \DateTimeInterface $end) : bool
-    {
-        if ($start > $this->getEnd()) {
-            return false;
-        }
-
-        if ($end < $this->getStart()) {
-            return false;
-        }
-
-        return true;
+        $this->assertSame($calendar, $entries);
+        $this->assertEquals($value, (string) $entries->$name);
+        $this->assertEquals($value, (string) $entries->$upperName);
     }
 }
