@@ -29,7 +29,9 @@
 
 namespace Org_Heigl\CalendarAggregator;
 
+use Sabre\VObject\Component\VCalendar;
+
 interface CalendarResourceInterface
 {
-    public function getEntries() : \Traversable;
+    public function getEntries() : VCalendar;
 }

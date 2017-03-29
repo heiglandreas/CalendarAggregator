@@ -23,57 +23,35 @@
  * @author    Andreas Heigl<andreas@heigl.org>
  * @copyright Andreas Heigl
  * @license   http://www.opensource.org/licenses/mit-license.php MIT-License
- * @since     14.03.2017
+ * @since     29.03.2017
  * @link      http://github.com/heiglandreas/org.heigl.CalendarAggregator
  */
 
-namespace Org_Heigl\CalendarAggregator;
+namespace Org_Heigl\CalendarAggregator\Decorators;
 
-use Sabre\VObject\Component\VEvent;
+use Org_Heigl\CalendarAggregator\CalendarResourceInterface;
+use Sabre\VObject\Component\VCalendar;
+use Sabre\VObject\Property\FlatText;
+use Sabre\VObject\UUIDUtil;
 
-class Appointment
+class AssertCalendarId implements CalendarResourceInterface
 {
-    private $event;
+    private $resource;
 
-    public function __construct(VEvent $event)
+    public function __construct(CalendarResourceInterface $calendarResource)
     {
-        $this->event = $event;
+        $this->resource = $calendarResource;
     }
 
-    public function getStart() : \DateTimeImmutable
+    public function getEntries() : VCalendar
     {
-        return $this->event->DTSTART->getDateTime();
-    }
+        $uuid = 'X-WR-RELCALID';
+        $entries = $this->resource->getEntries();
 
-    public function getEnd() : \DateTimeImmutable
-    {
-        return $this->event->DTEND->getDateTime();
-    }
-
-    public function getTitle() : string
-    {
-        if (! isset($this->event->SUMMARY)) {
-            return '';
+        if (! $entries->$uuid) {
+            $entries->add(new FlatText($entries, $uuid, UUIDUtil::getUUID()));
         }
 
-        return $this->event->SUMMARY;
-    }
-
-    public function getEvent() : VEvent
-    {
-        return $this->event;
-    }
-
-    public function intersects(\DateTimeInterface $start, \DateTimeInterface $end) : bool
-    {
-        if ($start > $this->getEnd()) {
-            return false;
-        }
-
-        if ($end < $this->getStart()) {
-            return false;
-        }
-
-        return true;
+        return $entries;
     }
 }

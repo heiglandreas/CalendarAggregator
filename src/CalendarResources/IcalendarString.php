@@ -33,6 +33,7 @@ use Org_Heigl\CalendarAggregator\CalendarResourceInterface;
 use Org_Heigl\Color\Color;
 use Org_Heigl\Color\Converter\XYZ2RGB;
 use Org_Heigl\Color\Renderer\RendererFactory;
+use Sabre\VObject\Component\VCalendar;
 use Sabre\VObject\Property\FlatText;
 use Sabre\VObject\Reader;
 use Sabre\VObject\UUIDUtil;
@@ -41,41 +42,13 @@ class IcalendarString implements CalendarResourceInterface
 {
     private $entry;
 
-    public function __construct(string $icalendar, $label = null, Color $color = null, Color $contrast = null)
+    public function __construct(string $icalendar, Color $color = null, Color $contrast = null)
     {
         $this->entry = Reader::read($icalendar, Reader::OPTION_FORGIVING);
-        error_log($this->entry->serialize());
-
-        $uuid = 'X-WR-RELCALID';
-        if (! $this->entry->$uuid) {
-            $this->entry->add(new FlatText($this->entry, $uuid, UUIDUtil::getUUID()));
-        }
-
-        if (null !== $label) {
-            $calName = 'X-WR-CALNAME';
-            $this->entry->$calName = $this->entry->$calName . ' -   ' . $label;
-        }
-
-        if (null !== $color) {
-            $converter = new XYZ2RGB();
-            $content   = $converter->convertColor($color);
-            $this->entry->add(new FlatText($this->entry, 'X-WDV-COLOR-RED', round($content[0], 0)));
-            $this->entry->add(new FlatText($this->entry, 'X-WDV-COLOR-GREEN', round($content[1], 0)));
-            $this->entry->add(new FlatText($this->entry, 'X-WDV-COLOR-BLUE', round($content[2], 0)));
-        }
-
-        if (null !== $contrast) {
-            $converter = new XYZ2RGB();
-            $content   = $converter->convertColor($contrast);
-            $this->entry->add(new FlatText($this->entry, 'X-WDV-CONTRAST-RED', round($content[0] * 255, 0)));
-            $this->entry->add(new FlatText($this->entry, 'X-WDV-CONTRAST-GREEN', round($content[1] * 255, 0)));
-            $this->entry->add(new FlatText($this->entry, 'X-WDV-CONTRAST-BLUE', round($content[2] * 255, 0)));
-        }
-
     }
 
-    public function getEntries(): \Traversable
+    public function getEntries(): VCalendar
     {
-        return $this->entry;
+        return clone $this->entry;
     }
 }
